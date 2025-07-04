@@ -1,4 +1,7 @@
 # 🎓 SkillSwap – Frontend
+[🎓 SkillSwap – Frontend.pdf](https://github.com/user-attachments/files/21057048/SkillSwap.Frontend.pdf)
+
+
 
 Welcome to the **SkillSwap** frontend repository – a modern, responsive web application built to **connect passionate learners and educators** through skill exchange. This React-based client offers a seamless and interactive user experience using cutting-edge technologies and best practices.
 
