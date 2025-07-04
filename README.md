@@ -1,5 +1,6 @@
 # 🎓 SkillSwap – Frontend
-[🎓 SkillSwap – Frontend.pdf](https://github.com/user-attachments/files/21057048/SkillSwap.Frontend.pdf)
+
+![🎓 SkillSwap – Frontend - visual selection](https://github.com/user-attachments/assets/51599a83-31d6-4b5d-8ca7-afedde6237c2)
 
 
 
