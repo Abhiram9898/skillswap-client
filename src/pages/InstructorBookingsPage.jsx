@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchInstructorBookings, updateBookingStatus, cancelBooking } from '../redux/bookingSlice';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link } from 'react-router-dom';
 
 const InstructorBookingsPage = () => {
   const dispatch = useDispatch();
@@ -25,18 +25,19 @@ const InstructorBookingsPage = () => {
         return `${base} bg-green-100 text-green-800`;
       case 'cancelled':
         return `${base} bg-red-100 text-red-800`;
-      case 'completed':
-        return `${base} bg-blue-100 text-blue-800`;
+      case 'completed': // Ensure 'completed' has a distinct style
+        return `${base} bg-blue-100 text-blue-800`; 
       default:
         return `${base} bg-gray-100 text-gray-800`;
     }
   };
 
+  // Handler for confirming a booking (status: 'confirmed')
   const handleConfirmBooking = async (bookingId) => {
     if (window.confirm('Are you sure you want to confirm this booking?')) {
       try {
         await dispatch(updateBookingStatus({ bookingId, status: 'confirmed' })).unwrap();
-        toast.success('Booking confirmed successfully!');
+        // REMOVED: toast.success('Booking confirmed successfully!'); // Redundant toast
         dispatch(fetchInstructorBookings(userInfo._id)); 
       } catch (err) {
         console.error('Failed to confirm booking:', err);
@@ -45,11 +46,26 @@ const InstructorBookingsPage = () => {
     }
   };
 
+  // NEW Handler for marking a booking as completed (status: 'completed')
+  const handleMarkAsCompleted = async (bookingId) => {
+    if (window.confirm('Are you sure you want to mark this booking as completed?')) {
+      try {
+        await dispatch(updateBookingStatus({ bookingId, status: 'completed' })).unwrap();
+        toast.success('Booking marked as completed!'); // Specific toast for this action
+        dispatch(fetchInstructorBookings(userInfo._id)); 
+      } catch (err) {
+        console.error('Failed to mark booking as completed:', err);
+        toast.error(err.message || 'Failed to mark booking as completed.');
+      }
+    }
+  };
+
+  // Handler for cancelling a booking
   const handleCancelBooking = async (bookingId) => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
       try {
         await dispatch(cancelBooking(bookingId)).unwrap();
-        toast.success('Booking cancelled successfully!');
+        // REMOVED: toast.success('Booking cancelled successfully!'); // Redundant toast
         dispatch(fetchInstructorBookings(userInfo._id));
       } catch (err) {
         console.error('Failed to cancel booking:', err);
@@ -89,8 +105,8 @@ const InstructorBookingsPage = () => {
                 </span>
               </p>
 
-              <div className="mt-4 flex gap-2 flex-wrap"> {/* Added flex-wrap for small screens */}
-                {/* Action Buttons (Conditional Rendering based on status) */}
+              <div className="mt-4 flex gap-2 flex-wrap">
+                {/* Actions for PENDING bookings */}
                 {booking.status === 'pending' && (
                   <>
                     <button
@@ -109,10 +125,11 @@ const InstructorBookingsPage = () => {
                     </button>
                   </>
                 )}
+                {/* Actions for CONFIRMED bookings */}
                 {booking.status === 'confirmed' && (
                   <>
                     <button
-                      onClick={() => handleConfirmBooking(booking._id, 'completed')} // This would need a separate handler if 'completed' is a distinct action
+                      onClick={() => handleMarkAsCompleted(booking._id)} // Call NEW handler
                       className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
                       disabled={loading}
                     >
@@ -130,7 +147,7 @@ const InstructorBookingsPage = () => {
                 {/* Chat Button - always available if not cancelled */}
                 {booking.status !== 'cancelled' && (
                   <Link
-                    to={`/chat/${booking._id}`} // Navigate to chat with booking ID
+                    to={`/chat/${booking._id}`}
                     className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
                   >
                     Chat with Student

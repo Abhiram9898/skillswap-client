@@ -3,14 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchSkillById, deleteSkill } from '../redux/skillSlice';
 import { FaStar, FaRegStar } from 'react-icons/fa';
-import ReviewForm from '../pages/ReviewForm'; // Assuming this is the correct path
+import ReviewForm from '../pages/ReviewForm';
+import { toast } from 'react-toastify'; // Ensure toast is imported for error messages
 
 const SkillDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
-  // State to control visibility of a custom confirmation modal
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
 
   const { skillDetail: currentSkill, loading, error } = useSelector((state) => state.skills);
@@ -27,25 +27,20 @@ const SkillDetail = () => {
   const isOwner = userInfo && currentSkill?.createdBy && userInfo._id === currentSkill.createdBy._id;
 
   const handleDeleteConfirm = async () => {
-    setShowConfirmDeleteModal(false); // Close the modal
+    setShowConfirmDeleteModal(false);
     try {
       setDeleting(true);
       await dispatch(deleteSkill(currentSkill._id)).unwrap();
-      navigate('/skills'); // Redirect after successful deletion
+      navigate('/skills');
     } catch (err) {
-      // Replace alert with a custom message box/toast
-      // For now, using toast as a fallback, but a dedicated modal is better for errors too.
       console.error('Failed to delete skill:', err);
-      // Assuming err.message is available from the thunk's rejectWithValue
       toast.error(err.message || 'Failed to delete skill. Please try again.');
     } finally {
       setDeleting(false);
     }
   };
 
-  // Function to trigger the custom confirmation modal
   const triggerDeleteConfirmation = () => {
-    // Instead of window.confirm, set state to show your custom modal
     setShowConfirmDeleteModal(true);
   };
 
@@ -64,7 +59,7 @@ const SkillDetail = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div className="flex items-center gap-4">
               <img
-                src={currentSkill.createdBy?.avatar || 'https://placehold.co/40x40/E0E0E0/333333?text=User'} // Updated placeholder
+                src={currentSkill.createdBy?.avatar || 'https://placehold.co/40x40/E0E0E0/333333?text=User'}
                 alt="Instructor"
                 className="w-12 h-12 rounded-full object-cover border"
               />
@@ -91,13 +86,13 @@ const SkillDetail = () => {
             {isOwner ? (
               <>
                 <Link
-                  to={`/skills/${currentSkill._id}/edit`}
+                  to={`/instructor/edit-skill/${currentSkill._id}`}
                   className="px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 shadow"
                 >
                   ✏️ Edit Skill
                 </Link>
                 <button
-                  onClick={triggerDeleteConfirmation} // Call the new trigger function
+                  onClick={triggerDeleteConfirmation}
                   disabled={deleting}
                   className="px-5 py-2 bg-red-500 text-white rounded hover:bg-red-600 shadow"
                 >
@@ -133,6 +128,20 @@ const SkillDetail = () => {
         <div className="p-6 md:p-8">
           <h3 className="text-xl font-bold mb-4">⭐ Student Reviews</h3>
 
+          {/* Display average rating and number of reviews */}
+          {currentSkill.averageRating !== undefined && currentSkill.numReviews !== undefined && (
+            <div className="mb-4 text-center text-lg font-semibold text-gray-700">
+              {currentSkill.numReviews > 0 ? (
+                <>
+                  Average Rating: <span className="text-yellow-500">{currentSkill.averageRating?.toFixed(1)}</span> / 5
+                  ({currentSkill.numReviews} review{currentSkill.numReviews > 1 ? 's' : ''})
+                </>
+              ) : (
+                'No ratings yet.'
+              )}
+            </div>
+          )}
+
           {currentSkill.reviews?.length > 0 ? (
             <div className="space-y-5">
               {[...currentSkill.reviews]
@@ -141,11 +150,11 @@ const SkillDetail = () => {
                   <div key={review._id} className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
                     <div className="flex items-center mb-2">
                       <img
-                        src={review.userId?.avatar || 'https://placehold.co/32x32/E0E0E0/333333?text=User'} // Updated placeholder
+                        src={review.userId?.avatar || 'https://placehold.co/32x32/E0E0E0/333333?text=User'}
                         alt={review.userId?.name}
                         className="w-8 h-8 rounded-full mr-3 object-cover"
                       />
-                      <span className="font-semibold">{review.userId?.name}</span>
+                      <span className="font-semibold">{review.userId?.name || 'Anonymous'}</span>
                     </div>
                     <div className="flex items-center mb-1 text-yellow-500 text-sm">
                       {[...Array(5)].map((_, i) =>
@@ -157,16 +166,18 @@ const SkillDetail = () => {
                       )}
                     </div>
                     <p className="text-gray-700 text-sm">{review.comment}</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Reviewed on: {new Date(review.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 ))}
             </div>
           ) : (
-            <p className="text-gray-600 text-sm">No reviews yet. Be the first to leave one!</p>
+            <p className="text-gray-600 text-sm text-center">No reviews yet. Be the first to leave one!</p>
           )}
         </div>
 
         {/* Write Review */}
-        {/* Only show ReviewForm if user is logged in AND not the owner of the skill */}
         {!isOwner && userInfo && (
           <div className="p-6 md:p-8 border-t">
             <ReviewForm onReviewSubmitted={() => dispatch(fetchSkillById(id))} />
