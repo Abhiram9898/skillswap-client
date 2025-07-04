@@ -1,19 +1,12 @@
 // // src/utils/axios.js
-// import axios from 'axios';
-
-// const instance = axios.create({
-//   baseURL: '/api', // thanks to Vite proxy
-//   withCredentials: true,
-// });
-
-// export default instance;
-
-
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // uses full URL from env
+  baseURL: import.meta.env.PROD 
+    ? 'https://skillswap-server-2z5x.onrender.com'
+    : '/api', // thanks to Vite proxy
   withCredentials: true,
 });
 
 export default instance;
+
